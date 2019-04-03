@@ -1,21 +1,9 @@
 package com.example.monopoly;
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.Context;
-import android.content.res.Resources;
+
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,15 +36,60 @@ public class Player {
         if(playerPos > 35){
             playerPos = 0;
             GamePlay.money2 = GamePlay.money2 + 200;
+            if (GamePlay.credit == true){
+                GamePlay.creditDialog.show();
+                GamePlay.yes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        GamePlay.creditDialog.dismiss();
+                        GamePlay.money2-=250;
+                        GamePlay.credit=false;
+                    }
+                });
+                GamePlay.no.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        GamePlay.creditDialog.dismiss();
+
+                    }
+                });
+            }
         }
         if(GamePlay.z == GamePlay.dicenumber) {
-            String text = GamePlay.company[GamePlay.z>playerPos?GamePlay.z-playerPos:playerPos-GamePlay.z]+" to ";
+            String text;
             if(playerPos == 27){
                 playerPos = 9;
             }
-            text += GamePlay.company[playerPos];
+            text = GamePlay.company[playerPos] + "\n" + GamePlay.money[playerPos] + "$";
+            if(GamePlay.company[Player.playerPos].equals("CHANCE") || GamePlay.company[Player.playerPos].equals("Monopoly-Gift")){
+                Random r = new Random();
+                int z= r.nextInt()%2;
+                int x = (r.nextInt()%30);
+                x=x<0?-x:x;
+                x=x+20;
+                if(z==0){
+                    text = "You Get $"+x;
+                    GamePlay.money2 += x;
+                    GamePlay.scorePlayer += x;
+                }
 
-
+            }
+            GamePlay.status.setText(text);
+            if(GamePlay.company_owner[playerPos].equals("Y")){
+                //do nothing
+            }
+            else if(GamePlay.company_owner[playerPos].equals("Computer")){
+                GamePlay.Buy.setVisibility(View.INVISIBLE);
+            }
+            else{
+                GamePlay.Buy.setVisibility(View.INVISIBLE);
+            }
+            if (GamePlay.credit == true){
+                GamePlay.pay_Rent.setVisibility(View.INVISIBLE);
+            }
+            if (GamePlay.credit == false){
+                GamePlay.pay_Rent.setVisibility(View.VISIBLE);
+            }
             GamePlay.myDialog.show();
 
 
@@ -70,5 +103,6 @@ public class Player {
         canvas.drawBitmap(player1, (GamePlay.positionXArray[playerPos]), (GamePlay.positionYArray[playerPos]), null);
 
     }
+
 
 }

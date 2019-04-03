@@ -1,25 +1,21 @@
 package com.example.monopoly;
 
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -29,9 +25,13 @@ import android.widget.Toast;
 import java.util.Random;
 
 
+
 public class GamePlay extends SurfaceView {
 
     private Bitmap player1;
+    private Bitmap player2;
+    private Bitmap icon1;
+    private Bitmap icon2;
     private Bitmap diceroll;
     private Bitmap one;
     private Bitmap two;
@@ -39,27 +39,38 @@ public class GamePlay extends SurfaceView {
     private Bitmap four;
     private Bitmap five;
     private Bitmap six;
-    private Bitmap finish;
+    private Bitmap finishturn;
+    public Bitmap playersign;
+    public Bitmap computersign;
 
     public static int scorePlayer;
+    public static int scoreComputer;
     public static  TextView textview;
     public static  TextView textview2;
     private Bitmap background;
     private SurfaceHolder holder;
     private GameThread gameThread;
+    private Player myplayer;
+    private Computer comp;
     public static int number;
+    private LinearLayout layout;
+    public static int money1;
     public static int money2;
     public static int count;
     public static int dicenumber;
     private static int dicenumber1;
     private static int dicenumber2;
+    private  MediaPlayer mp;
     public static int money[];
+    public static int rent[];
     public static int positionXArray[];
     public static int positionYArray[];
-    public static boolean playerturn;
-    public static int z;
     public static String[] company;
     public static String[] company_owner;
+    public static boolean playerturn;
+    public static boolean computerturn;
+    public static int z;
+
     public static String text;
     public static int ax,ay;
     public static int diffX;
@@ -68,19 +79,31 @@ public class GamePlay extends SurfaceView {
     public static int maxW;
     public static Dialog myDialog;
     public static Dialog playerDialog;
+    public static Dialog computerDialog;
+    public static Dialog creditDialog;
+    public static ImageView playerImage;
     public static TextView status;
+    public static TextView smscomp;
     public static Button Buy;
+    public static Button end;
+    public static Button click;
     public static Button pay_Rent;
+    public static Button no;
+    public static Button yes;
     public boolean xyz;
-    private Player myplayer;
-    public static ImageView finishImage;
+    public static boolean credit;
+    public static boolean order;
+    public static TextView playerBal;
+    public static TextView companyPlayer;
+    public static TextView playername;
     WindowManager wm=(WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE);
     Display display=wm.getDefaultDisplay();
 
 
+
+
     public GamePlay(Context context){
         super(context);
-
         holder = getHolder();
         gameThread = new GameThread(this);
 
@@ -109,7 +132,6 @@ public class GamePlay extends SurfaceView {
             }
 
         });
-
         company_owner = new String[36];
         for(int i=0;i<36;i++){
             company_owner[i]="Y";
@@ -128,13 +150,20 @@ public class GamePlay extends SurfaceView {
         company[24]="Monopoly-Gift";company[25]="Ducati";company[26]="McDonald's";company[27]="Go-To-JAIL";
         company[28]="intel";company[29]="X-BOX";company[30]="Water-Works";company[31]="Nestle";
         company[32]="CHANCE";company[33]="SAMSUNG";company[34]="Towar-Tax";company[35]="Coca-Cola";
+
+        scoreComputer=0;
         scorePlayer=0;
         myDialog = new Dialog(context);
         playerDialog = new Dialog(context);
+        computerDialog = new Dialog(context);
+        creditDialog = new Dialog(context);
         int w=display.getHeight();
         int h=display.getWidth();
         background = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.bg), (h / 12) * 10, w, true);
-        player1 = BitmapFactory.decodeResource(getResources(), R.drawable.player1_50);
+        player1 = BitmapFactory.decodeResource(getResources(), R.mipmap.player_1);
+        player2 = BitmapFactory.decodeResource(getResources(), R.mipmap.player_2);
+        icon1 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.playersign), (h / 12) * 2, (w / 12) * 2, true);
+        icon2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.computersign), (h / 12) * 2, (w / 12) * 2, true);
         diceroll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.dice3droll), (h / 12) * 2, (w / 12) * 2, true);
         one = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.one), (h / 12) * 2, (w / 12) * 2, true);
         two = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.two), (h / 12) * 2, (w/12)*2, true);
@@ -142,8 +171,9 @@ public class GamePlay extends SurfaceView {
         four = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.four), (h / 12) * 2, (w / 12) * 2, true);
         five = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.five), (h / 12) * 2, (w / 12) * 2, true);
         six = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.six), (h / 12) * 2, (w/12)*2, true);
-        finish = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.finish), (h / 12) * 2, (w / 12) * 2, true);
-
+        finishturn = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.finish), (h / 12) * 2,(w / 12) * 4, true);
+        playersign = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.playersign), (h / 40),(w / 40), true);
+        computersign = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.computersign), (h / 40),(w / 40), true);
 
         ax = ( ((h / 12) * 10)/12)*11;
         ay = (w/12)*10;
@@ -156,9 +186,8 @@ public class GamePlay extends SurfaceView {
         z=0;
 
         xyz = true;
+        credit=false;
 
-
-        //position array calculating..........
         positionXArray = new int[36];
 
         positionXArray[0] = GamePlay.ax;
@@ -243,64 +272,95 @@ public class GamePlay extends SurfaceView {
 
         textview = new TextView(getContext());
         textview2 = new TextView(getContext());
+        myplayer = new Player(this,player1);
+        comp = new Computer(this,player2);
         dicenumber = 0;
         dicenumber1 = 0;
         dicenumber2 = 0;
-        playerturn = true;
+        playerturn = false;
+        computerturn = false;
+
         textview.setText(" ");
         number =40;
+        money1 = 1500;
         money2 = 1500;
         count=0;
 
         money = new int[36];
-
-        money[0] = 0;
-        money[1] = 50;
-        money[2] = 0;
-        money[3] = 50;
-        money[4] = 0;
-        money[5] = 100;
-        money[6] = 0;
-        money[7] = 100;
-        money[8] = 100;
-        money[9] = 100;
-        money[10] = 150;
-        money[11] = 150;
-        money[12] = 150;
-        money[13] = 150;
-        money[14] = 200;
-        money[15] = 0;
-        money[16] = 200;
-        money[17] = 200;
-        money[18] = 0;
-        money[19] = 250;
-        money[20] = 250;
-        money[21] = 0;
-        money[22] = 250;
-        money[23] = 300;
-        money[24] = 0;
-        money[25] = 300;
-        money[26] = 300;
-        money[27] = 0;
-        money[28] = 350;
-        money[29] = 350;
-        money[30] = 150;
-        money[31] = 350;
-        money[32] = 0;
-        money[33] = 400;
-        money[34] = 0;
-        money[35] = 400;
-
-        myplayer = new Player(this,player1);
+        rent = new int[36];
+        // complete the money array
+        money[0] = 0;rent[0]=0;
+        money[1] = 50;rent[1]=5;
+        money[2] = 0;rent[2]=0;
+        money[3] = 50;rent[3]=5;
+        money[4] = 0;rent[4]=0;
+        money[5] = 100;rent[5]=10;
+        money[6] = 0;rent[6]=0;
+        money[7] = 100;rent[7]=10;
+        money[8] = 100;rent[8]=10;
+        money[9] = 100;rent[9]=0;
+        money[10] = 150;rent[10]=15;
+        money[11] = 150;rent[11]=15;
+        money[12] = 150;rent[12]=15;
+        money[13] = 150;rent[13]=15;
+        money[14] = 200;rent[14]=20;
+        money[15] = 0;rent[15]=0;
+        money[16] = 200;rent[16]=20;
+        money[17] = 200;rent[17]=20;
+        money[18] = 0;rent[18]=0;
+        money[19] = 250;rent[19]=25;
+        money[20] = 250;rent[20]=25;
+        money[21] = 0;rent[21]=0;
+        money[22] = 250;rent[22]=25;
+        money[23] = 300;rent[23]=30;
+        money[24] = 0;rent[24]=0;
+        money[25] = 300;rent[25]=30;
+        money[26] = 300;rent[26]=30;
+        money[27] = 0;rent[27]=0;
+        money[28] = 350;rent[28]=35;
+        money[29] = 350;rent[29]=35;
+        money[30] = 150;rent[30]=15;
+        money[31] = 350;rent[31]=35;
+        money[32] = 0;rent[32]=0;
+        money[33] = 400;rent[33]=40;
+        money[34] = 0;rent[34]=0;
+        money[35] = 400;rent[35]=40;
+        //complete money array
 
         myDialog.setContentView(R.layout.dialogfile);
+        myDialog.setTitle("Player Turn");
         myDialog.setCanceledOnTouchOutside(true);
         myDialog.setCancelable(false);
         status=(TextView) myDialog.findViewById(R.id.status_id);
         Buy = (Button) myDialog.findViewById(R.id.popButton);
+        end = (Button) myDialog.findViewById(R.id.endButton);
         pay_Rent = (Button) myDialog.findViewById(R.id.pay_Rent);
 
+        //player profile dialog
+        playerDialog.setContentView(R.layout.playerprofile);
+        playerDialog.setTitle("Player 1");
+        playerDialog.setCanceledOnTouchOutside(true);
+        playerDialog.setCancelable(true);
+        playerBal = (TextView)playerDialog.findViewById(R.id.textView3);
+        playername = (TextView)playerDialog.findViewById(R.id.textView);
+        companyPlayer = (TextView)playerDialog.findViewById(R.id.textView5);
+        playerImage = (ImageView)playerDialog.findViewById(R.id.imageViewPlayer);
+        //computer finish Turn Dialog
+        computerDialog.setContentView(R.layout.compdialog);
+        computerDialog.setTitle("Computer Turn");
+        computerDialog.setCanceledOnTouchOutside(true);
+        computerDialog.setCancelable(true);
+        smscomp = (TextView)computerDialog.findViewById(R.id.sms);
+        click = (Button)computerDialog.findViewById(R.id.click);
 
+        creditDialog.setContentView(R.layout.creditdialog);
+        creditDialog.setTitle("Credit");
+        creditDialog.setCanceledOnTouchOutside(true);
+        creditDialog.setCancelable(true);
+        no = (Button) creditDialog.findViewById(R.id.no);
+        yes = (Button) creditDialog.findViewById(R.id.yes);
+
+        order=true;
     }
     @Override
     public void onDraw(Canvas canvas){
@@ -308,9 +368,48 @@ public class GamePlay extends SurfaceView {
         int x = (display.getWidth()/2);
 
         canvas.drawBitmap(background,(0),(0),null);
+        canvas.drawBitmap(icon2,(display.getWidth()/12)*10,0,null);
+        canvas.drawBitmap(icon1, (display.getWidth() / 12) * 10, (display.getHeight() / 12) * 10, null);
         canvas.drawBitmap(diceroll, (display.getWidth() / 12) * 10, (display.getHeight() / 12) * 4, null);
         canvas.drawBitmap(diceroll, (display.getWidth() / 12) * 10, (display.getHeight() / 12) * 6, null);
 
+        for(int i=0;i<36;i++){
+            if(i<=10) {
+                if (company_owner[i].equals("Player")) {
+                    canvas.drawBitmap(playersign, GamePlay.positionXArray[i], GamePlay.positionYArray[i], null);
+                }
+                if (company_owner[i].equals("Computer")) {
+                    canvas.drawBitmap(computersign, GamePlay.positionXArray[i], GamePlay.positionYArray[i], null);
+                }
+            }
+            else if(i<19){
+                if (company_owner[i].equals("Player")) {
+                    canvas.drawBitmap(playersign, GamePlay.positionXArray[i - 1], GamePlay.positionYArray[i - 1], null);
+                }
+                if (company_owner[i].equals("Computer")) {
+                    canvas.drawBitmap(computersign, GamePlay.positionXArray[i - 1], GamePlay.positionYArray[i - 1], null);
+                }
+            }
+            else if(i<28){
+                if (company_owner[i].equals("Player")) {
+                    canvas.drawBitmap(playersign, GamePlay.positionXArray[i], GamePlay.positionYArray[i], null);
+                }
+                if (company_owner[i].equals("Computer")) {
+                    canvas.drawBitmap(computersign, GamePlay.positionXArray[i], GamePlay.positionYArray[i], null);
+                }
+            }
+            else if(i<35){
+                if (company_owner[i].equals("Player")) {
+                    canvas.drawBitmap(playersign, GamePlay.positionXArray[i + 1], GamePlay.positionYArray[i + 1], null);
+                }
+                if (company_owner[i].equals("Computer")) {
+                    canvas.drawBitmap(computersign, GamePlay.positionXArray[i + 1], GamePlay.positionYArray[i + 1], null);
+                }
+            }
+            else{
+
+            }
+        }
         switch(dicenumber1){
             case 0:
                 canvas.drawBitmap(diceroll, (display.getWidth() / 12) * 10, (display.getHeight() / 12) * 4, null);
@@ -360,15 +459,20 @@ public class GamePlay extends SurfaceView {
 
         }
 
-
         if(count==0) {
+            canvas.drawBitmap(player2,(Computer.posX),(Computer.posY),null);
             myplayer.onDraw(canvas);
         }
+        else{
+            canvas.drawBitmap(player1,(Player.positionX),(Player.positionY),null);
+            comp.onDraw(canvas);
+        }
+
 
 
         LinearLayout layout = new LinearLayout(getContext());
         textview.setVisibility(View.VISIBLE);
-        textview.setText(" $ " + money2);
+        textview.setText(" $ " + money1);
         textview.setTextColor(Color.BLUE);
         textview.setTextSize(25);
 
@@ -382,6 +486,7 @@ public class GamePlay extends SurfaceView {
 
         LinearLayout layout2 = new LinearLayout(getContext());
         textview2.setVisibility(View.VISIBLE);
+        textview2.setText(" $ " + money2);
         textview2.setTextColor(Color.GREEN);
         textview2.setTextSize(25);
 
@@ -397,23 +502,47 @@ public class GamePlay extends SurfaceView {
     }
 
 
+
     @SuppressLint("WrongCall")
-    protected void checkMovement(float x2,float y2) {
+    protected void checkMovement(float x2,float y2){
 
         int xRight = (display.getWidth() / 12) * 10;
         int xLeft = display.getWidth();
         int yRight = (display.getHeight() / 12) * 4;
         int yLeft = (display.getHeight() / 12) * 8;
+        int y1Right = 0 ;
+        int y1Left = (display.getHeight() / 12) * 2;
         int y2Right = (display.getHeight() / 12) * 10;
         int y2Left = (display.getHeight() / 12) * 12;
-
-        if(x2>xRight && x2<xLeft  && y2>y2Right && y2<y2Left  ){
-            finishImage.setImageResource(R.drawable.finish);
-            playerturn=false;
+        if(x2>xRight && x2<xLeft  && y2>y1Right && y2<y1Left  ){
+            playerDialog.setTitle("Computer");
+            playerImage.setImageResource(R.drawable.computersign);
+            playername.setText("Computer");
+            String company_by_player = "";
+            for(int i=0;i<36;i++){
+                if(company_owner[i].equals("Computer"))
+                    company_by_player += company[i]+"\n";
+            }
+            companyPlayer.setText(company_by_player);
+            playerBal.setText("  $ "+Integer.toString(GamePlay.money1));
+            playerDialog.show();
 
         }
-
-        if (x2 > xRight && x2 < xLeft && y2 > yRight && y2 < yLeft && playerturn == true) {
+        if(x2>xRight && x2<xLeft  && y2>y2Right && y2<y2Left  ){
+            playerDialog.setTitle("Player");
+            playerImage.setImageResource(R.drawable.playersign);
+           playername.setText("Player");
+            String company_by_player = "";
+            for(int i=0;i<36;i++){
+                if(company_owner[i].equals("Player"))
+                    company_by_player += company[i]+"\n";
+            }
+            companyPlayer.setText(company_by_player);
+            playerBal.setText("  $ "+Integer.toString(GamePlay.money2));
+            playerDialog.show();
+        }
+        if(x2>xRight && x2<xLeft  && y2>yRight && y2<yLeft && order==true  ) {
+            order=false;
 
             dicenumber = 0;
             Random r = new Random();
@@ -436,34 +565,117 @@ public class GamePlay extends SurfaceView {
                 }
                 z++;
             }
+
             count = ++count % 2;
-        }
 
-        Buy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GamePlay.money2 = GamePlay.money2 - GamePlay.money[Player.playerPos];
-                company_owner[Player.playerPos] = "Player";
-                scorePlayer += GamePlay.money[Player.playerPos];
-                myDialog.dismiss();
-                GamePlay.Buy.setVisibility(View.VISIBLE);
-                count = ++count % 2;
-            }
-        });
-
-          pay_Rent.setOnClickListener(new View.OnClickListener() {
+            Buy.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    GamePlay.money2 += 500;
+                    GamePlay.money2 = GamePlay.money2 - GamePlay.money[Player.playerPos];
+                    company_owner[Player.playerPos] = "Player";
+                    scorePlayer += GamePlay.money[Player.playerPos];
                     myDialog.dismiss();
                     GamePlay.Buy.setVisibility(View.VISIBLE);
+                    GamePlay.pay_Rent.setText("Credit");
+                    if (money2 < 0) {
+                        gameOver();
+                    }
+                    computerTurn();
+                    count = ++count % 2;
+
+                }
+            });
+            end.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    myDialog.dismiss();
+                    GamePlay.Buy.setVisibility(View.VISIBLE);
+                    GamePlay.pay_Rent.setText("Credit");
+                    if (money2 < 0) {
+                        gameOver();
+                    }
+                    computerTurn();
                     count = ++count % 2;
                 }
             });
+            pay_Rent.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (credit == false) {
+                        GamePlay.money2 = GamePlay.money2 + 200;
+                        credit = true;
+                    }
+                    myDialog.dismiss();
+                    computerTurn();
+                    count = ++count % 2;
+                }
+            });
+
+
         }
 
+    }
 
+    public void gameOver(){
+        final Dialog exitGame = new Dialog(getContext());
+
+        String res="";
+
+        if(money1 > money2){
+            res = "You Lose the Game.";
+        }
+        else{
+            res = "You Win the Game.";
+        }
+        exitGame.setTitle(res);
+        String result = "Computer  "+scoreComputer+"\n"+"Player  "+scorePlayer;
+        Toast.makeText(getContext(),"Game Over",Toast.LENGTH_SHORT).show();
+        exitGame.setCanceledOnTouchOutside(false);
+        exitGame.show();
+
+    }
+    @SuppressLint("WrongCall")
+    public void computerTurn(){
+        dicenumber = 0;
+        Random r = new Random();
+        dicenumber1 = (r.nextInt(6) + 1);
+        dicenumber += dicenumber1;
+        dicenumber2 = (r.nextInt(6) + 1);
+        dicenumber += dicenumber2;
+        text = company[Computer.playerPos];
+        z = 1;
+        while(z <= dicenumber) {
+            Canvas canvas = holder.lockCanvas(null);
+            onDraw(canvas);
+            holder.unlockCanvasAndPost(canvas);
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            z++;
+        }
+        if(text.contains("Vision")){
+
+        }
+        else {
+            text = " Computer is on " + company[Computer.playerPos];
+        }
+        smscomp.setText(text);
+        computerDialog.show();
+        click.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                computerDialog.dismiss();
+                if(money1 < 0){
+                    gameOver();
+                }
+            }
+        });
+        order=true;
+
+    }
     @Override
     public boolean onTouchEvent(MotionEvent event){
         super.onTouchEvent(event);
@@ -481,4 +693,5 @@ public class GamePlay extends SurfaceView {
         event.setAction(0);
         return true;
     }
+
 }

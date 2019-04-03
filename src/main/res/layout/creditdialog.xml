@@ -7,7 +7,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/status_id"
+        android:id="@+id/status"
+        android:text="Pay 250$ for credit?"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"/>
 
@@ -21,31 +22,24 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/popButton"
+            android:id="@+id/yes"
             android:layout_width="119dp"
             android:layout_height="63dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_weight="0.36"
-            android:text="Buy" />
+            android:text="Yes" />
 
         <Button
-            android:id="@+id/pay_Rent"
+            android:id="@+id/no"
             android:layout_width="119dp"
             android:layout_height="63dp"
             android:layout_alignTop="@+id/popButton"
             android:layout_toEndOf="@+id/popButton"
             android:layout_weight="0.36"
-            android:text="Credit" />
+            android:text="No" />
 
-        <Button
-            android:id="@+id/endButton"
-            android:layout_width="119dp"
-            android:layout_height="63dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_weight="0.36"
-            android:text="End" />
+
     </LinearLayout>
 
 </RelativeLayout>
