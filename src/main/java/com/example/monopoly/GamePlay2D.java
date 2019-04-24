@@ -1,32 +1,40 @@
 package com.example.monopoly;
 
-
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.util.AttributeSet;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Random;
 
 
 
-public class GamePlay extends SurfaceView {
+public class GamePlay2D extends SurfaceView {
 
     private Bitmap player1;
     private Bitmap player2;
@@ -45,13 +53,13 @@ public class GamePlay extends SurfaceView {
 
     public static int scorePlayer;
     public static int scoreComputer;
-    public static  TextView textview;
+    public static TextView textview;
     public static  TextView textview2;
     private Bitmap background;
     private SurfaceHolder holder;
     private GameThread gameThread;
-    private Player myplayer;
-    private Computer comp;
+   // private Player myplayer;
+   // private Computer comp;
     public static int number;
     private LinearLayout layout;
     public static int money1;
@@ -76,15 +84,12 @@ public class GamePlay extends SurfaceView {
     public static Dialog playerDialog;
     public static Dialog computerDialog;
     public static Dialog creditDialog;
-    public static Dialog rentDialog;
     public static ImageView playerImage;
     public static TextView status;
     public static TextView smscomp;
-    public static TextView textRent;
     public static Button Buy;
     public static Button end;
     public static Button click;
-    public static Button clickRent;
     public static Button pay_Rent;
     public static Button no;
     public static Button yes;
@@ -96,18 +101,22 @@ public class GamePlay extends SurfaceView {
     public static TextView playername;
     private DatabaseHelper db;
     private Constants constants;
+    BluetoothSocket bluetoothSocket;
+    BluetoothDevice bluetoothDevice;
+    public static ConnectedThread connectedThread;
     WindowManager wm=(WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE);
     Display display=wm.getDefaultDisplay();
 
 
 
 
-    public GamePlay(Context context){
-        super(context);
+    public GamePlay2D(Context context, AttributeSet attrs){
+        super(context,attrs);
         holder = getHolder();
         gameThread = new GameThread(this);
         Constants c=new Constants(context);
         db=new DatabaseHelper(context);
+
 
         holder.addCallback(new SurfaceHolder.Callback() {
 
@@ -142,7 +151,6 @@ public class GamePlay extends SurfaceView {
         playerDialog = new Dialog(context);
         computerDialog = new Dialog(context);
         creditDialog = new Dialog(context);
-        rentDialog = new Dialog(context);
         int w=display.getHeight();
         int h=display.getWidth();
         background = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.bg), (h / 12) * 10, w, true);
@@ -175,8 +183,8 @@ public class GamePlay extends SurfaceView {
 
         textview = new TextView(getContext());
         textview2 = new TextView(getContext());
-        myplayer = new Player(this,player1,constants,db);
-        comp = new Computer(this,player2,constants,db);
+      //  myplayer = new Player(this,player1,constants,db);
+     //   comp = new Computer(this,player2,constants,db);
         dicenumber = 0;
         dicenumber1 = 0;
         dicenumber2 = 0;
@@ -217,13 +225,6 @@ public class GamePlay extends SurfaceView {
         computerDialog.setCancelable(true);
         smscomp = (TextView)computerDialog.findViewById(R.id.sms);
         click = (Button)computerDialog.findViewById(R.id.click);
-
-        rentDialog.setContentView(R.layout.rentdialog);
-        rentDialog.setTitle("Rent");
-        rentDialog.setCanceledOnTouchOutside(false);
-        rentDialog.setCancelable(true);
-        textRent = (TextView)rentDialog.findViewById(R.id.renttext);
-        clickRent = (Button)rentDialog.findViewById(R.id.clickB);
 
         creditDialog.setContentView(R.layout.creditdialog);
         creditDialog.setTitle("Credit");
@@ -336,11 +337,11 @@ public class GamePlay extends SurfaceView {
 
         if(count==0) {
             canvas.drawBitmap(player2,(Computer.posX),(Computer.posY),null);
-            myplayer.onDraw(canvas);
+       //     myplayer.onDraw(canvas);
         }
         else{
             canvas.drawBitmap(player1,(Player.positionX),(Player.positionY),null);
-            comp.onDraw(canvas);
+         //   comp.onDraw(canvas);
         }
 
 
@@ -394,8 +395,8 @@ public class GamePlay extends SurfaceView {
             playerImage.setImageResource(R.drawable.computersign);
             playername.setText("Computer");
             String company_by_player ;
-                company_by_player = db.getPlayerCompanies("Computer");
-               // if(company_owner.equals("Computer"))
+            company_by_player = db.getPlayerCompanies("Computer");
+            // if(company_owner.equals("Computer"))
             //        company_by_player += company[i]+"\n"; //update company owner
 
             companyPlayer.setText(company_by_player);
@@ -406,10 +407,10 @@ public class GamePlay extends SurfaceView {
         if(x2>xRight && x2<xLeft  && y2>y2Right && y2<y2Left  ){
             playerDialog.setTitle("Player");
             playerImage.setImageResource(R.drawable.playersign);
-           playername.setText("Player");
+            playername.setText("Player");
             String company_by_player;
-                company_by_player = db.getPlayerCompanies("Player");
-                Log.d ("dd",company_by_player);
+            company_by_player = db.getPlayerCompanies("Player");
+            Log.d ("dd",company_by_player);
                /* if(company_owner.equals("Player"))
                     company_by_player += company[i]+"\n"; //update company owner*/
             companyPlayer.setText(company_by_player);
@@ -449,6 +450,7 @@ public class GamePlay extends SurfaceView {
                     int money = db.getCompanyCost(Player.playerPos);
                     GamePlay.money2 = GamePlay.money2 - money;
                     db.updateCompanyOwner(Player.playerPos,"Player");
+                    db.getCompanyOwner(Player.playerPos);
                     scorePlayer += money;
                     myDialog.dismiss();
                     GamePlay.Buy.setVisibility(View.VISIBLE);
@@ -486,30 +488,6 @@ public class GamePlay extends SurfaceView {
                     count = ++count % 2;
                 }
             });
-            String company_owner = db.getCompanyOwner(Player.playerPos);
-            if(company_owner.equals("Computer")) {
-                int rent = db.getCompanyRent(Player.playerPos);
-                textRent.setText("You paid " + String.valueOf(rent) + "$");
-                rentDialog.show();
-
-                money2 -= rent;
-                money1 += rent;
-                clickRent.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        rentDialog.dismiss();
-                        if (money2 < 0) {
-                            gameOver();
-                        }
-                        computerTurn();
-                        count = ++count % 2;
-
-                    }
-                });
-
-
-            }
-
 
 
         }
@@ -536,6 +514,12 @@ public class GamePlay extends SurfaceView {
     }
     @SuppressLint("WrongCall")
     public void computerTurn(){
+        if (connectedThread != null) {
+            String status = "";
+          //  status = status.concat(String.valueOf(money1) + ";" + String.valueOf(playerPos) + ";" + choice);
+            byte[] ByteArray = status.getBytes();
+            connectedThread.write(ByteArray);
+        }
         dicenumber = 0;
         Random r = new Random();
         dicenumber1 = (r.nextInt(6) + 1);
@@ -556,28 +540,6 @@ public class GamePlay extends SurfaceView {
             }
             z++;
         }
-
-        boolean dialog= false;
-
-        String company_owner = db.getCompanyOwner(Computer.playerPos);
-        if(company_owner.equals("Player")) {
-            int rent = db.getCompanyRent(Computer.playerPos);
-            textRent.setText("Computer paid " + String.valueOf(rent) + "$");
-            rentDialog.show();
-
-            money1 -= rent;
-            money2 += rent;
-            clickRent.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    rentDialog.dismiss();
-
-                }
-            });
-            dialog=true;
-
-
-        }
         if(text.contains("Vision")){
 
         }
@@ -585,7 +547,7 @@ public class GamePlay extends SurfaceView {
             text = " Computer is on " + db.getCompany(Computer.playerPos);
         }
         smscomp.setText(text);
-        if (!dialog) computerDialog.show();
+        computerDialog.show();
         click.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -615,4 +577,126 @@ public class GamePlay extends SurfaceView {
         event.setAction(0);
         return true;
     }
+
+    public class ConnectedThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+        private int cnt = 0;
+
+        public ConnectedThread(BluetoothSocket socket) {
+            mmSocket = socket;
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+            // Get the BluetoothSocket input and output streams
+            try {
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
+            } catch (IOException e) {
+                Log.e("e", "temp sockets not created", e);
+            }
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run() {
+            Log.i("e", "BEGIN mConnectedThread");
+            if (cnt == 0) {
+                try {
+                    byte[] ByteArray = BluetoothActivity.MyName.getBytes();
+                    connectedThread.write(ByteArray);
+                    cnt++;
+                } catch (Exception e) {
+                    Log.d("e", e.getMessage());
+                }
+            }
+            byte[] buffer = new byte[1024];
+            int bytes;
+            // Keep listening to the InputStream while connected
+            while (true) {
+                try {
+                    Log.i("e", "BEGIN Listening");
+                    // Read from the InputStream
+                    String readMessage = "";
+                    bytes = mmInStream.read(buffer);
+                    readMessage = new String(buffer, 0, bytes);
+                    Log.i("e", "Listening : " + readMessage);
+                    if (readMessage.contains(";")) {
+                        // Send the obtained bytes to the UI Activity
+                       /* enemyMoney = (int)(readMessage.charAt(0)-48);
+                        enemyPos = (int) ()
+
+                        String str = "" + a[0][0] + a[0][1] + a[0][2] + a[1][0] + a[1][1] + a[1][2] + a[2][0] + a[2][1] + a[2][2] + ";" + turn;
+
+                        Log.i("e", "GOT : " + str);
+
+                        touchEnabled = true;
+
+                        if (!oncewin && !oncedrawen) {
+                            postInvalidate();
+                            check();*/
+                        }
+                    /*} else if (readMessage.equals("REMATCH")) {
+                        Log.d("e", "rematch");
+                        oppontentRematch = true;
+                        init();
+                        postInvalidate();
+                        TwoDevice2P.act_2p.runOnUiThread(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(TwoDevice2P.act_2p, TwoDevice2P_names.MyName + " vs " + TwoDevice2P_names.OpponentName, Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                        );
+                    } else if (readMessage.equals("END")) {
+                        break;
+                    }*/ else {
+                        try {
+                            Log.i("e", "Hello");
+                            BluetoothActivity.OpponentName = readMessage;
+                           /* Log.i("e", TwoDevice2P_names.MyName + " vs " + TwoDevice2P_names.OpponentName);
+                            TwoDevice2P.act_2p.runOnUiThread(
+                                    new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(TwoDevice2P.act_2p, TwoDevice2P_names.MyName + " vs " + TwoDevice2P_names.OpponentName, Toast.LENGTH_SHORT).show();
+                                        }
+                                    }*/
+                           // );
+                        } catch (Exception e) {
+                            Log.d("e", e.getMessage());
+                        }
+                    }
+                } catch (Exception e) {
+                    //Log.e(TAG, "disconnected", e);
+                    break;
+                }
+            }
+        }
+
+        public void write(byte[] buffer) {
+
+                try {
+                    Log.d("e", "Writing ");
+                    mmOutStream.write(buffer);
+                } catch (IOException e) {
+                    Log.e("e", "Exception during write", e);
+                }
+
+        }
+
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Log.e("e", "close() of connect socket failed", e);
+            }
+        }
+    }
 }
+
+
+
+
+

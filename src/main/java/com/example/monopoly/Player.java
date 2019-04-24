@@ -1,11 +1,9 @@
 package com.example.monopoly;
 
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Random;
 
@@ -13,6 +11,8 @@ public class Player {
 
     private Bitmap player1 ;
     private GamePlay game;
+    private  DatabaseHelper db;
+    private Constants constants;
     public static int positionX;
     public static int positionY;
     private TextView textview;
@@ -20,11 +20,13 @@ public class Player {
     private int y;
     public static int playerPos;
 
-    public Player(GamePlay game,Bitmap player1){
+    public Player(GamePlay game,Bitmap player1,Constants constants, DatabaseHelper db){
+        this.db = db;
+        this.constants = constants;
         this.game = game;
         this.player1 = player1;
-        positionX = GamePlay.ax;
-        positionY = GamePlay.ay;
+        positionX = constants.getAx();
+        positionY = constants.getAy();
         x=0;
         y=0;
         playerPos = 0;
@@ -53,15 +55,19 @@ public class Player {
 
                     }
                 });
+
             }
         }
+
         if(GamePlay.z == GamePlay.dicenumber) {
             String text;
             if(playerPos == 27){
                 playerPos = 9;
             }
-            text = GamePlay.company[playerPos] + "\n" + GamePlay.money[playerPos] + "$";
-            if(GamePlay.company[Player.playerPos].equals("CHANCE") || GamePlay.company[Player.playerPos].equals("Monopoly-Gift")){
+            String company=db.getCompany(playerPos);
+            int money=db.getCompanyCost(playerPos);
+            text = company + "\n" + money + "$";
+            if(company.equals("CHANCE") || company.equals("Monopoly-Gift")){
                 Random r = new Random();
                 int z= r.nextInt()%2;
                 int x = (r.nextInt()%30);
@@ -75,34 +81,41 @@ public class Player {
 
             }
             GamePlay.status.setText(text);
-            if(GamePlay.company_owner[playerPos].equals("Y")){
+            String company_owner = db.getCompanyOwner(playerPos);
+            boolean dialog = false;
+
+
+            if(company_owner.equals("Y")){
                 //do nothing
             }
-            else if(GamePlay.company_owner[playerPos].equals("Computer")){
+            else if(company_owner.equals("Computer")){
                 GamePlay.Buy.setVisibility(View.INVISIBLE);
+                dialog =true;
+
             }
             else{
                 GamePlay.Buy.setVisibility(View.INVISIBLE);
+
             }
             if (GamePlay.credit == true){
                 GamePlay.pay_Rent.setVisibility(View.INVISIBLE);
             }
-            if (GamePlay.credit == false){
+            if (GamePlay.credit == false ){
                 GamePlay.pay_Rent.setVisibility(View.VISIBLE);
             }
-            GamePlay.myDialog.show();
-
-
+            if (!dialog) GamePlay.myDialog.show();
         }
     }
+
+
     public void onDraw(Canvas canvas){
         if(GamePlay.dicenumber != 0)
             update();
-        positionX = (GamePlay.positionXArray[playerPos]);
-        positionY = (GamePlay.positionYArray[playerPos]);
-        canvas.drawBitmap(player1, (GamePlay.positionXArray[playerPos]), (GamePlay.positionYArray[playerPos]), null);
-
+        positionX = constants.getPositionXArray()[playerPos];
+        positionY = constants.getPositionYArray()[playerPos];
+        canvas.drawBitmap(player1, positionX, positionY, null);
     }
+
 
 
 }
