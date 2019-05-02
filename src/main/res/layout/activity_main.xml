@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="1">
@@ -12,15 +12,26 @@
         android:layout_weight="0.36"
         android:layout_gravity="left"
         android:onClick="play"
-        android:layout_marginTop="50dp"
-        android:layout_alignStart="@+id/about"
         android:textSize="32sp"
         android:shadowDx="14"
         android:shadowDy="7"
         android:shadowRadius="5"/>
 
     <Button
-        android:layout_width="180dp"
+        android:id="@+id/twoplay"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_gravity="left"
+        android:layout_weight="0.36"
+        android:onClick="two_play"
+        android:shadowDx="14"
+        android:shadowDy="7"
+        android:shadowRadius="5"
+        android:text="Two Players"
+        android:textSize="32sp" />
+
+    <Button
+        android:layout_width="wrap_content"
         android:layout_height="60dp"
         android:text="About Game"
         android:id="@+id/about"
@@ -28,23 +39,20 @@
         android:onClick="about"
         android:layout_gravity="left"
         android:textSize="32sp"
-        android:layout_marginTop="63dp"
         android:layout_below="@+id/play"
         android:layout_centerHorizontal="true"/>
 
     <Button
-        android:layout_width="180dp"
-        android:layout_height="60dp"
-        android:text="EXIT"
         android:id="@+id/exit"
-        android:layout_weight="0.36"
-        android:layout_gravity="left"
-        android:onClick="exit"
-        android:textSize="32sp"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
         android:layout_below="@id/about"
-        android:layout_alignStart="@id/about"
-        android:layout_marginTop="57dp"/>
+        android:layout_gravity="left"
+        android:layout_weight="0.36"
+        android:onClick="exit"
+        android:text="EXIT"
+        android:textSize="32sp" />
 
 
 
-</RelativeLayout>
+</LinearLayout>

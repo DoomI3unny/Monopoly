@@ -20,6 +20,7 @@ import icepick.Icepick;
 public class MainActivity extends Activity {
 
     GamePlay game;
+    BluetoothActivity bluetoothActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Icepick.restoreInstanceState(this, savedInstanceState);
@@ -32,6 +33,11 @@ public class MainActivity extends Activity {
 
         game=new GamePlay(this);
         setContentView(game);
+    }
+    public void two_play(View v){
+
+        Intent intent=new Intent(this,BluetoothActivity.class);
+        startActivity(intent);
     }
     public void about(View v){
         String url = "https://en.wikipedia.org/wiki/Monopoly_(game)";
